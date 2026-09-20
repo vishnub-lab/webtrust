@@ -2,3 +2,6 @@ Flask==3.0.3
 requests==2.32.3
 beautifulsoup4==4.12.3
 matplotlib==3.9.2
+dnspython==2.7.0
+python-whois==0.9.5
+reportlab==4.4.5

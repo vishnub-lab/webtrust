@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – WebTrust</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container" style="padding-top: 40px;">
+    <header class="result-header">
+      <h1>Saved Scan Dashboard</h1>
+      <p>{{ user_email }}</p>
+      <a class="btn-primary" href="{{ url_for('home') }}">Analyze a Website</a>
+      <form method="post" action="{{ url_for('logout') }}" style="display:inline;">
+        <button class="btn-secondary" type="submit">Sign Out</button>
+      </form>
+    </header>
+    <section class="history-table-container">
+      <table class="history-table">
+        <thead><tr><th>Favorite</th><th>Website</th><th>Score</th><th>Verdict</th><th>Scanned</th></tr></thead>
+        <tbody>
+        {% for scan in scans %}
+          <tr>
+            <td>
+              <form method="post" action="{{ url_for('toggle_favorite', scan_id=scan.id) }}">
+                <button type="submit" class="btn-secondary">{{ '★' if scan.favorite else '☆' }}</button>
+              </form>
+            </td>
+            <td>{{ scan.website }}</td>
+            <td>{{ scan.risk_score }}/100</td>
+            <td>{{ scan.verdict }}</td>
+            <td>{{ scan.scan_time }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5">No saved scans yet. Analyze a site while signed in.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "WebTrust Website Scanner",
+  "version": "1.0.0",
+  "description": "Scan the active website with a running WebTrust server.",
+  "permissions": ["activeTab", "tabs"],
+  "host_permissions": ["http://127.0.0.1:5000/*"],
+  "action": {
+    "default_title": "Scan with WebTrust",
+    "default_popup": "popup.html"
+  }
+}

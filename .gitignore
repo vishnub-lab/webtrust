@@ -37,9 +37,14 @@ ENV/
 
 # Generated temporary files
 reports/*.txt
+reports/*.json
+reports/*.pdf
 !reports/.gitkeep
 static/graphs/*.png
 !static/graphs/.gitkeep
+webtrust.sqlite3
+webtrust.log
+*.test.log
 
 # IDE / Editor files
 .vscode/

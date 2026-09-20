@@ -43,6 +43,9 @@
           <p style="margin-top: 12px; color: var(--text-secondary); font-size: 0.95rem;">
             {{ risk.summary }}
           </p>
+          <p style="color: var(--text-muted); font-size: 0.8rem;">
+            Evidence confidence: {{ risk.confidence }} ({{ risk.confidence_score }}/100)
+          </p>
         </div>
 
         <!-- Risk Score Number Display -->
@@ -86,6 +89,28 @@
         {% endfor %}
 
       </div>
+    </section>
+
+    <!-- Explainable findings grouped by the evidence source -->
+    <section class="explanation-card">
+      <h2 class="card-title">🧭 Explainable Findings</h2>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">
+        Score thresholds: 0–29 likely trustworthy, 30–65 needs caution, 66–100 high risk.
+        These are signals, not a guarantee that a site is safe or malicious.
+      </p>
+      {% for category, findings in risk.findings_by_category.items() %}
+        <h3 style="color: var(--accent-cyan); margin: 18px 0 8px;">{{ category }}</h3>
+        {% if findings %}
+          {% for finding in findings %}
+            <div class="signal-item {{ finding.severity | lower }}">
+              <span class="signal-icon">{{ finding.severity }}</span>
+              <span><strong>{{ finding.message }}</strong><br>{{ finding.explanation }}</span>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p style="color: var(--text-muted); font-size: 0.85rem;">No findings recorded in this category.</p>
+        {% endif %}
+      {% endfor %}
     </section>
 
     <!-- Python-Generated Matplotlib Graphs Section -->
@@ -264,6 +289,10 @@
             <td>{{ analysis.status_code if analysis.status_code else 'Connection Error' }}</td>
           </tr>
           <tr>
+            <th>Final URL</th>
+            <td>{{ analysis.final_url if analysis.final_url else 'Unavailable' }}</td>
+          </tr>
+          <tr>
             <th>Response Time</th>
             <td>{{ analysis.response_time }} seconds</td>
           </tr>
@@ -286,6 +315,26 @@
           <tr>
             <th>Server Banner</th>
             <td>{{ analysis.server_info }}</td>
+          </tr>
+          <tr>
+            <th>DNS Resolution</th>
+            <td>{{ 'Resolved' if analysis.dns.resolved else 'Not resolved' }}</td>
+          </tr>
+          <tr>
+            <th>Domain Age</th>
+            <td>{{ analysis.whois.domain_age_days ~ ' days' if analysis.whois.domain_age_days is not none else 'Unavailable' }}</td>
+          </tr>
+          <tr>
+            <th>TLS Certificate</th>
+            <td>
+              {% if analysis.tls_certificate.valid is sameas true %}
+                Valid{% if analysis.tls_certificate.days_until_expiry is not none %} ({{ analysis.tls_certificate.days_until_expiry }} days remaining){% endif %}
+              {% elif analysis.tls_certificate.checked %}
+                Invalid or unavailable
+              {% else %}
+                Not checked
+              {% endif %}
+            </td>
           </tr>
         </tbody>
       </table>
@@ -337,6 +386,12 @@
     <div class="actions-bar">
       <a href="{{ url_for('download_report', filename=report_filename) }}" class="btn-primary">
         📥 Download Report (.TXT)
+      </a>
+      <a href="{{ url_for('download_report', filename=pdf_filename) }}" class="btn-secondary">
+        📄 Download PDF
+      </a>
+      <a href="{{ url_for('download_report', filename=json_filename) }}" class="btn-secondary">
+        🧾 Download JSON
       </a>
       <a href="{{ url_for('home') }}" class="btn-secondary">
         🔄 Analyze Another Website
