@@ -9,130 +9,160 @@
 <body>
 
   <!-- Navigation Bar -->
-  <nav class="navbar">
+  <header class="navbar">
     <div class="container nav-container">
-      <div class="brand-logo">
-        <a href="{{ url_for('home') }}" style="color: inherit;"><span>🛡️ WebTrust</span></a>
-        <span class="brand-badge">Passive Trust Scanner</span>
-      </div>
-      <div class="nav-links">
+      <a href="{{ url_for('home') }}" class="brand-logo">
+        <span class="brand-icon">🛡️</span>
+        <span>WebTrust</span>
+      </a>
+      <nav class="nav-links">
         <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+        <a href="{{ url_for('home') }}#analyze" class="nav-link">Analyze Website</a>
+        <a href="{{ url_for('history_page') }}" class="nav-link">History</a>
         <a href="{{ url_for('how_it_works') }}" class="nav-link active">How It Works</a>
-        <a href="{{ url_for('history_page') }}" class="nav-link">Scan History</a>
-      </div>
+        <a href="#about" class="nav-link">About</a>
+        {% if session.get('user_id') %}
+          <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="nav-link">Sign In</a>
+        {% endif %}
+      </nav>
     </div>
-  </nav>
+  </header>
 
-  <main class="container" style="padding-top: 40px; padding-bottom: 60px;">
+  <main class="container" style="padding-top: 32px; padding-bottom: 48px;">
     
-    <header style="text-align: center; margin-bottom: 40px;">
-      <div class="hero-pill">
-        <span>Transparent Architecture</span>
-      </div>
+    <div style="text-align: center; margin-bottom: 32px;">
       <h1 class="hero-title">How WebTrust Works</h1>
       <p class="hero-subtitle">
-        A step-by-step walkthrough of the passive trust analysis pipeline, built for students and educators.
+        A step-by-step overview of the passive website trust and risk assessment pipeline.
       </p>
-    </header>
-
-    <!-- Pipeline Steps Container -->
-    <div class="pipeline-container">
-      
-      <!-- Step 1 -->
-      <div class="pipeline-step">
-        <div class="step-number">1</div>
-        <div class="step-content">
-          <h3>User Enters Website URL</h3>
-          <p>
-            The user inputs a target URL into the web interface. WebTrust normalizes the URL (ensuring proper protocol formatting like <code>https://</code>) and validates the domain syntax before making any network connections.
-          </p>
-        </div>
-      </div>
-
-      <!-- Step 2 -->
-      <div class="pipeline-step">
-        <div class="step-number">2</div>
-        <div class="step-content">
-          <h3>Python Collects Website Information (Passive HTTP)</h3>
-          <p>
-            Using the Python <code>requests</code> library, WebTrust makes a standard, safe <code>GET</code> request with a 7-second timeout. It measures response time, observes redirects, captures the HTTP status code, and inspects server response headers.
-          </p>
-          <p style="margin-top: 8px; color: var(--accent-cyan); font-size: 0.85rem;">
-            🔒 <strong>Safety Guarantee:</strong> WebTrust never performs brute-forcing, injection, port scanning, or intrusive testing.
-          </p>
-        </div>
-      </div>
-
-      <!-- Step 3 -->
-      <div class="pipeline-step">
-        <div class="step-number">3</div>
-        <div class="step-content">
-          <h3>Python Checks Trust Signals</h3>
-          <p>
-            Using <code>BeautifulSoup</code> and URL parsing routines:
-          </p>
-          <ul style="margin-left: 20px; margin-top: 6px; color: var(--text-secondary); font-size: 0.9rem;">
-            <li><strong>URL Heuristics:</strong> Checks length, IP addresses vs domains, excessive hyphens, and suspicious keywords.</li>
-            <li><strong>Content Heuristics:</strong> Detects urgency language, fake-support prompts, login-heavy pages, cross-domain form actions, and possible brand/domain mismatches.</li>
-            <li><strong>Content Analysis:</strong> Counts hyperlinks, form elements, and presence of password fields.</li>
-            <li><strong>Trust Pages:</strong> Searches for links pointing to Privacy Policy, About Us, Terms of Service, and Contact info.</li>
-            <li><strong>Security Headers:</strong> Audits defensive headers like HSTS, CSP, X-Frame-Options, and X-Content-Type-Options.</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Step 4 -->
-      <div class="pipeline-step">
-        <div class="step-number">4</div>
-        <div class="step-content">
-          <h3>Python Calculates Risk Score (0 – 100)</h3>
-          <p>
-            In <code>risk_score.py</code>, a transparent rule engine aggregates risk points. The score ranges from <strong>0 (very few risk indicators)</strong> to <strong>100 (many risk indicators)</strong>:
-          </p>
-          <div style="display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap;">
-            <div class="verdict-tag trustworthy">0 – 29: Likely Trustworthy</div>
-            <div class="verdict-tag caution">30 – 65: Needs Caution</div>
-            <div class="verdict-tag high-risk">66 – 100: High Risk Indicators</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 5 -->
-      <div class="pipeline-step">
-        <div class="step-number">5</div>
-        <div class="step-content">
-          <h3>Python Generates Matplotlib Graphs</h3>
-          <p>
-            Server-side Python code in <code>graph.py</code> uses <strong>Matplotlib</strong> (headless <code>Agg</code> backend) to create three high-resolution charts:
-          </p>
-          <ul style="margin-left: 20px; margin-top: 6px; color: var(--text-secondary); font-size: 0.9rem;">
-            <li><strong>Graph 1 – Risk Breakdown:</strong> A horizontal bar chart of category risk points.</li>
-            <li><strong>Graph 2 – Trust Signals:</strong> A donut/pie chart of Positive vs Warning vs Risk signals.</li>
-            <li><strong>Graph 3 – Scan History:</strong> A line chart tracking risk scores over past scans.</li>
-          </ul>
-          <p style="margin-top: 8px; color: var(--text-muted); font-size: 0.85rem;">
-            * Zero client-side JavaScript is used; images are rendered directly on the server as PNG files.
-          </p>
-        </div>
-      </div>
-
-      <!-- Step 6 -->
-      <div class="pipeline-step">
-        <div class="step-number">6</div>
-        <div class="step-content">
-          <h3>Flask Displays Report & Generates Download</h3>
-          <p>
-            The Flask controller renders <code>result.html</code> containing the comprehensive visual dashboard, saves the scan entry to <code>scan_history.json</code>, and writes a detailed text report file in <code>reports/</code> for the user to download.
-          </p>
-        </div>
-      </div>
-
     </div>
 
-    <!-- Back to Home Button -->
-    <div style="text-align: center; margin-top: 36px;">
+    <!-- 3-Step Simple Explanation -->
+    <section class="explanation-card">
+      <h2 class="card-title">Three-Step Analysis Process</h2>
+      <div class="pipeline-container" style="margin-bottom: 0;">
+        
+        <div class="pipeline-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Enter Website URL</h3>
+            <p>
+              The user enters a target website URL or domain name. WebTrust checks the domain format, prepends standard protocol schemes if missing, and validates the URL syntax.
+            </p>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>WebTrust analyzes security and trust indicators</h3>
+            <p>
+              The backend makes a passive HTTP request to check server status, TLS/SSL certificates, domain registration details, response headers (HSTS, CSP), and trust page hyperlinks (About, Privacy, Terms).
+            </p>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>WebTrust displays the risk score and detailed results</h3>
+            <p>
+              The risk engine computes a 0–100 score with a transparent classification (Low, Medium, or High Risk). The user is presented with categorized findings, Matplotlib visual charts, and downloadable reports.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Technical Pipeline Details -->
+    <section class="explanation-card">
+      <h2 class="card-title">Detailed Technical Pipeline</h2>
+      <div class="signals-list">
+        
+        <div class="signal-item low">
+          <span class="signal-icon">1.</span>
+          <div>
+            <strong>Passive Inspection (checker.py):</strong>
+            Safely retrieves the HTTP headers and webpage HTML using Python <code>requests</code> with a 7-second timeout. It captures redirect chains, response timing, and server software banners without invasive probing.
+          </div>
+        </div>
+
+        <div class="signal-item low">
+          <span class="signal-icon">2.</span>
+          <div>
+            <strong>HTML &amp; Signal Parsing:</strong>
+            Using <code>BeautifulSoup</code>, WebTrust extracts outbound links, counts input forms, verifies password field security, and scans for standard trust and legal pages (Privacy Policy, Terms of Service, Contact).
+          </div>
+        </div>
+
+        <div class="signal-item low">
+          <span class="signal-icon">3.</span>
+          <div>
+            <strong>Heuristic Risk Engine (risk_score.py):</strong>
+            Scores risk factors across 6 distinct categories: HTTPS &amp; SSL, Domain &amp; Host, URL Structure, Redirects, Web Content, and Security Headers.
+            <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
+              <span class="verdict-tag trustworthy">0 – 29: Low Risk</span>
+              <span class="verdict-tag caution">30 – 65: Medium Risk</span>
+              <span class="verdict-tag high-risk">66 – 100: High Risk</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="signal-item low">
+          <span class="signal-icon">4.</span>
+          <div>
+            <strong>Server-Side Visualizations (graph.py):</strong>
+            Generates statistical charts using Python's <strong>Matplotlib</strong> headless engine. No client-side JavaScript libraries are loaded; charts are rendered server-side as high-resolution PNG images.
+          </div>
+        </div>
+
+        <div class="signal-item low">
+          <span class="signal-icon">5.</span>
+          <div>
+            <strong>Report Generation:</strong>
+            Saves persistent scan records in <code>scan_history.json</code> and compiles detailed downloadable reports in Plain Text (.TXT), PDF, and structured JSON formats.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+      <h2>About WebTrust</h2>
+      <p>
+        WebTrust is a website trust and risk analysis project developed to help users understand basic security and trust indicators of a website.
+      </p>
+      <p>
+        <strong>Disclaimer:</strong> This project evaluates publicly observable signals using automated heuristics. It does not claim that the system can guarantee whether a website is completely safe or malicious. Always exercise normal security caution when browsing the web.
+      </p>
+      <div class="project-meta-grid">
+        <div class="project-meta-item">
+          <span class="project-meta-label">Project Type</span>
+          <span class="project-meta-val">B.E. Computer Science Mini-Project</span>
+        </div>
+        <div class="project-meta-item">
+          <span class="project-meta-label">Backend Architecture</span>
+          <span class="project-meta-val">Python 3, Flask, SQLite</span>
+        </div>
+        <div class="project-meta-item">
+          <span class="project-meta-label">Libraries Used</span>
+          <span class="project-meta-val">Requests, BeautifulSoup4, Matplotlib, ReportLab</span>
+        </div>
+        <div class="project-meta-item">
+          <span class="project-meta-label">Design Aesthetic</span>
+          <span class="project-meta-val">Clean, Professional Academic Layout</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to action -->
+    <div style="text-align: center; margin-top: 24px;">
       <a href="{{ url_for('home') }}" class="btn-primary">
-        🚀 Try Analyzing a Website
+        Analyze a Website
       </a>
     </div>
 
@@ -141,7 +171,7 @@
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p>WebTrust – Educational Website Trust & Risk Analyzer | Built with Python, Flask, and Matplotlib</p>
+      <p>WebTrust – Website Trust &amp; Risk Analyzer | Final Year B.E. Computer Science Mini-Project</p>
     </div>
   </footer>
 

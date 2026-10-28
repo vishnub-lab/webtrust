@@ -7,37 +7,110 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <main class="container" style="padding-top: 40px;">
-    <header class="result-header">
-      <h1>Saved Scan Dashboard</h1>
-      <p>{{ user_email }}</p>
-      <a class="btn-primary" href="{{ url_for('home') }}">Analyze a Website</a>
-      <form method="post" action="{{ url_for('logout') }}" style="display:inline;">
-        <button class="btn-secondary" type="submit">Sign Out</button>
-      </form>
-    </header>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="{{ url_for('home') }}" class="brand-logo">
+        <span class="brand-icon">🛡️</span>
+        <span>WebTrust</span>
+      </a>
+      <nav class="nav-links">
+        <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+        <a href="{{ url_for('home') }}#analyze" class="nav-link">Analyze Website</a>
+        <a href="{{ url_for('history_page') }}" class="nav-link">History</a>
+        <a href="{{ url_for('how_it_works') }}" class="nav-link">How It Works</a>
+        <a href="{{ url_for('home') }}#about" class="nav-link">About</a>
+        <a href="{{ url_for('dashboard') }}" class="nav-link active">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: 32px; padding-bottom: 48px;">
+    
+    <div class="result-header">
+      <div class="result-banner">
+        <div>
+          <h1 class="hero-title" style="font-size: 1.8rem; text-align: left; margin-bottom: 6px;">Saved Scan Dashboard</h1>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Signed in as: <strong>{{ user_email }}</strong>
+          </p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <a class="btn-primary" href="{{ url_for('home') }}">Analyze a Website</a>
+          <form method="post" action="{{ url_for('logout') }}" style="display:inline;">
+            <button class="btn-secondary" type="submit">Sign Out</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <section class="history-table-container">
       <table class="history-table">
-        <thead><tr><th>Favorite</th><th>Website</th><th>Score</th><th>Verdict</th><th>Scanned</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Favorite</th>
+            <th>Website</th>
+            <th>Score</th>
+            <th>Verdict</th>
+            <th>Scanned Time</th>
+            <th>Action</th>
+          </tr>
+        </thead>
         <tbody>
         {% for scan in scans %}
           <tr>
             <td>
               <form method="post" action="{{ url_for('toggle_favorite', scan_id=scan.id) }}">
-                <button type="submit" class="btn-secondary">{{ '★' if scan.favorite else '☆' }}</button>
+                <button type="submit" class="btn-sm btn-secondary" title="Toggle Favorite">
+                  {{ '★' if scan.favorite else '☆' }}
+                </button>
               </form>
             </td>
-            <td>{{ scan.website }}</td>
-            <td>{{ scan.risk_score }}/100</td>
-            <td>{{ scan.verdict }}</td>
-            <td>{{ scan.scan_time }}</td>
+            <td>
+              <span style="font-family: SFMono-Regular, Menlo, Consolas, monospace; font-weight: 600; color: var(--navy-dark);">
+                {{ scan.website }}
+              </span>
+            </td>
+            <td>
+              <strong style="color: {% if scan.risk_score < 30 %}var(--color-low-text){% elif scan.risk_score <= 65 %}var(--color-med-text){% else %}var(--color-high-text){% endif %};">
+                {{ scan.risk_score }}/100
+              </strong>
+            </td>
+            <td>
+              <span class="verdict-tag {% if scan.risk_score < 30 %}low-risk{% elif scan.risk_score <= 65 %}medium-risk{% else %}high-risk{% endif %}">
+                {{ scan.verdict }}
+              </span>
+            </td>
+            <td style="color: var(--text-secondary); font-size: 0.88rem;">
+              {{ scan.scan_time }}
+            </td>
+            <td>
+              <form action="{{ url_for('analyze') }}" method="POST" style="display:inline;">
+                <input type="hidden" name="url" value="{{ scan.website }}">
+                <button type="submit" class="btn-sm btn-outline">Re-analyze</button>
+              </form>
+            </td>
           </tr>
         {% else %}
-          <tr><td colspan="5">No saved scans yet. Analyze a site while signed in.</td></tr>
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 32px; color: var(--text-muted);">
+              No saved scans yet. Analyze a website while logged in to save results.
+            </td>
+          </tr>
         {% endfor %}
         </tbody>
       </table>
     </section>
+
   </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>WebTrust – Website Trust &amp; Risk Analyzer | Final Year B.E. Computer Science Mini-Project</p>
+    </div>
+  </footer>
+
 </body>
 </html>

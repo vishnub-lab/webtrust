@@ -9,37 +9,41 @@
 <body>
 
   <!-- Navigation Bar -->
-  <nav class="navbar">
+  <header class="navbar">
     <div class="container nav-container">
-      <div class="brand-logo">
-        <a href="{{ url_for('home') }}" style="color: inherit;"><span>🛡️ WebTrust</span></a>
-        <span class="brand-badge">Passive Trust Scanner</span>
-      </div>
-      <div class="nav-links">
+      <a href="{{ url_for('home') }}" class="brand-logo">
+        <span class="brand-icon">🛡️</span>
+        <span>WebTrust</span>
+      </a>
+      <nav class="nav-links">
         <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+        <a href="{{ url_for('home') }}#analyze" class="nav-link">Analyze Website</a>
+        <a href="{{ url_for('history_page') }}" class="nav-link active">History</a>
         <a href="{{ url_for('how_it_works') }}" class="nav-link">How It Works</a>
-        <a href="{{ url_for('history_page') }}" class="nav-link active">Scan History</a>
-      </div>
+        <a href="{{ url_for('home') }}#about" class="nav-link">About</a>
+        {% if session.get('user_id') %}
+          <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="nav-link">Sign In</a>
+        {% endif %}
+      </nav>
     </div>
-  </nav>
+  </header>
 
-  <main class="container" style="padding-top: 40px; padding-bottom: 60px;">
+  <main class="container" style="padding-top: 32px; padding-bottom: 48px;">
     
-    <header style="text-align: center; margin-bottom: 36px;">
-      <div class="hero-pill">
-        <span>Persistent Local Storage</span>
-      </div>
+    <div style="text-align: center; margin-bottom: 28px;">
       <h1 class="hero-title">Website Scan History</h1>
       <p class="hero-subtitle">
-        Review previous website assessments stored safely in <code>scan_history.json</code>.
+        Review previous website assessments and historical risk trends.
       </p>
-    </header>
+    </div>
 
     <!-- Historical Chart -->
-    <section class="graph-card" style="margin-bottom: 36px;">
-      <h2 style="font-size: 1.15rem; margin-bottom: 16px; color: var(--accent-cyan);">
-        📈 Risk Trend of Recent Scans (Python Matplotlib)
-      </h2>
+    <section class="graph-card" style="margin-bottom: 28px;">
+      <div class="graph-card-header">
+        <span>Risk Trend of Recent Scans (Python Matplotlib)</span>
+      </div>
       <img src="{{ url_for('static', filename=history_chart) }}" alt="Historical Scan Trend" class="graph-img">
     </section>
 
@@ -48,37 +52,49 @@
       <table class="history-table">
         <thead>
           <tr>
-            <th>Website Domain</th>
+            <th>Website</th>
             <th>Risk Score</th>
-            <th>Overall Result</th>
-            <th>Date & Time</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>View Report</th>
           </tr>
         </thead>
         <tbody>
           {% for item in records %}
             <tr>
-              <td style="font-family: monospace; font-weight: 600; color: var(--text-primary);">
-                {{ item.website }}
+              <td>
+                <span style="font-family: SFMono-Regular, Menlo, Consolas, monospace; font-weight: 600; color: var(--navy-dark);">
+                  {{ item.website }}
+                </span>
               </td>
               <td>
-                <span style="font-weight: 700; font-size: 1.1rem; color: {% if item.risk_score < 30 %}var(--color-trustworthy){% elif item.risk_score <= 65 %}var(--color-caution){% else %}var(--color-risk){% endif %};">
+                <strong style="font-size: 1.05rem; color: {% if item.risk_score < 30 %}var(--color-low-text){% elif item.risk_score <= 65 %}var(--color-med-text){% else %}var(--color-high-text){% endif %};">
                   {{ item.risk_score }}
-                </span>
-                <span style="color: var(--text-muted); font-size: 0.85rem;">/ 100</span>
+                </strong>
+                <span style="color: var(--text-muted); font-size: 0.82rem;">/ 100</span>
               </td>
               <td>
-                <span class="verdict-tag {% if item.risk_score < 30 %}trustworthy{% elif item.risk_score <= 65 %}caution{% else %}high-risk{% endif %}" style="font-size: 0.82rem; padding: 4px 12px;">
-                  {{ item.result }}
+                <span class="verdict-tag {% if item.risk_score < 30 %}low-risk{% elif item.risk_score <= 65 %}medium-risk{% else %}high-risk{% endif %}">
+                  {% if item.risk_score < 30 %}Low Risk{% elif item.risk_score <= 65 %}Medium Risk{% else %}High Risk{% endif %}
+                  <span style="font-weight: 500; opacity: 0.85;">({{ item.result }})</span>
                 </span>
               </td>
-              <td style="color: var(--text-secondary); font-size: 0.88rem;">
+              <td style="color: var(--text-secondary); font-size: 0.88rem; white-space: nowrap;">
                 {{ item.date }}
+              </td>
+              <td>
+                <form action="{{ url_for('analyze') }}" method="POST" style="display:inline;">
+                  <input type="hidden" name="url" value="{{ item.website }}">
+                  <button type="submit" class="btn-sm btn-outline">
+                    View Report
+                  </button>
+                </form>
               </td>
             </tr>
           {% else %}
             <tr>
-              <td colspan="4" style="text-align: center; padding: 32px; color: var(--text-muted);">
-                No scan history records found yet. Try scanning a website from the home page!
+              <td colspan="5" style="text-align: center; padding: 32px; color: var(--text-muted);">
+                No scan history records found yet. Enter a website on the Home page to start.
               </td>
             </tr>
           {% endfor %}
@@ -89,10 +105,10 @@
     <!-- Action Buttons -->
     <div class="actions-bar">
       <a href="{{ url_for('home') }}" class="btn-primary">
-        🔍 Analyze New Website
+        Analyze Website
       </a>
       <a href="{{ url_for('download_history_csv') }}" class="btn-secondary">
-        📊 Download History CSV
+        Download History CSV
       </a>
     </div>
 
@@ -101,7 +117,7 @@
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p>WebTrust – Educational Website Trust & Risk Analyzer | Built with Python, Flask, and Matplotlib</p>
+      <p>WebTrust – Website Trust &amp; Risk Analyzer | Final Year B.E. Computer Science Mini-Project</p>
     </div>
   </footer>
 

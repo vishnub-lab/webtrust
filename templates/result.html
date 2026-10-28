@@ -9,19 +9,26 @@
 <body>
 
   <!-- Navigation Bar -->
-  <nav class="navbar">
+  <header class="navbar">
     <div class="container nav-container">
-      <div class="brand-logo">
-        <a href="{{ url_for('home') }}" style="color: inherit;"><span>🛡️ WebTrust</span></a>
-        <span class="brand-badge">Passive Trust Scanner</span>
-      </div>
-      <div class="nav-links">
+      <a href="{{ url_for('home') }}" class="brand-logo">
+        <span class="brand-icon">🛡️</span>
+        <span>WebTrust</span>
+      </a>
+      <nav class="nav-links">
         <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+        <a href="{{ url_for('home') }}#analyze" class="nav-link">Analyze Website</a>
+        <a href="{{ url_for('history_page') }}" class="nav-link">History</a>
         <a href="{{ url_for('how_it_works') }}" class="nav-link">How It Works</a>
-        <a href="{{ url_for('history_page') }}" class="nav-link">Scan History</a>
-      </div>
+        <a href="{{ url_for('home') }}#about" class="nav-link">About</a>
+        {% if session.get('user_id') %}
+          <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="nav-link">Sign In</a>
+        {% endif %}
+      </nav>
     </div>
-  </nav>
+  </header>
 
   <!-- Result Dashboard Container -->
   <main class="container">
@@ -31,37 +38,43 @@
       <div class="result-banner">
         <div class="result-info">
           <div class="scan-date">Scanned on: {{ analysis.scan_time }}</div>
-          <h1>{{ analysis.url_data.domain }}</h1>
-          <p style="color: var(--text-secondary); margin-bottom: 14px; font-family: monospace; font-size: 0.95rem;">
+          <h1 class="result-domain-title">{{ analysis.url_data.domain }}</h1>
+          <p class="result-url-text">
             {{ analysis.url_data.url }}
           </p>
-          <div>
-            <span class="verdict-tag {{ risk.verdict_badge }}">
-              {{ risk.verdict }}
+          <div style="margin-bottom: 12px;">
+            <span class="verdict-tag {% if risk.score < 30 %}low-risk{% elif risk.score <= 65 %}medium-risk{% else %}high-risk{% endif %}" style="font-size: 0.95rem; padding: 6px 14px;">
+              {% if risk.score < 30 %}
+                Low Risk ({{ risk.verdict }})
+              {% elif risk.score <= 65 %}
+                Medium Risk ({{ risk.verdict }})
+              {% else %}
+                High Risk ({{ risk.verdict }})
+              {% endif %}
             </span>
           </div>
-          <p style="margin-top: 12px; color: var(--text-secondary); font-size: 0.95rem;">
+          <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 8px;">
             {{ risk.summary }}
           </p>
-          <p style="color: var(--text-muted); font-size: 0.8rem;">
-            Evidence confidence: {{ risk.confidence }} ({{ risk.confidence_score }}/100)
+          <p style="color: var(--text-muted); font-size: 0.82rem;">
+            Evidence Confidence: {{ risk.confidence }} ({{ risk.confidence_score }}/100)
           </p>
         </div>
 
         <!-- Risk Score Number Display -->
         <div class="score-box">
-          <div class="score-number {{ risk.verdict_badge }}">
+          <div class="score-number {% if risk.score < 30 %}low-risk{% elif risk.score <= 65 %}medium-risk{% else %}high-risk{% endif %}">
             {{ risk.score }}
           </div>
           <div class="score-label">Risk Score / 100</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">(0 = Safer, 100 = Higher Risk)</div>
+          <div class="score-scale-hint">0 = Safer, 100 = Higher Risk</div>
         </div>
       </div>
     </header>
 
-    <!-- Why did we get this result? -->
+    <!-- Why did we get this result? / Observed Signals -->
     <section class="explanation-card">
-      <h2 class="card-title">💡 Why did we get this result?</h2>
+      <h2 class="card-title">Analysis Signals Summary</h2>
       <div class="signals-list">
         
         <!-- Positive Signals -->
@@ -88,51 +101,39 @@
           </div>
         {% endfor %}
 
+        {% if not risk.positive_signals and not risk.warning_signals and not risk.risk_signals %}
+          <p style="color: var(--text-muted); font-size: 0.9rem;">No specific positive or warning signals detected.</p>
+        {% endif %}
+
       </div>
     </section>
 
-    <!-- Explainable findings grouped by the evidence source -->
-    <section class="explanation-card">
-      <h2 class="card-title">🧭 Explainable Findings</h2>
-      <p style="color: var(--text-secondary); font-size: 0.9rem;">
-        Score thresholds: 0–29 likely trustworthy, 30–65 needs caution, 66–100 high risk.
-        These are signals, not a guarantee that a site is safe or malicious.
-      </p>
-      {% for category, findings in risk.findings_by_category.items() %}
-        <h3 style="color: var(--accent-cyan); margin: 18px 0 8px;">{{ category }}</h3>
-        {% if findings %}
-          {% for finding in findings %}
-            <div class="signal-item {{ finding.severity | lower }}">
-              <span class="signal-icon">{{ finding.severity }}</span>
-              <span><strong>{{ finding.message }}</strong><br>{{ finding.explanation }}</span>
-            </div>
-          {% endfor %}
-        {% else %}
-          <p style="color: var(--text-muted); font-size: 0.85rem;">No findings recorded in this category.</p>
-        {% endif %}
-      {% endfor %}
-    </section>
-
-    <!-- Python-Generated Matplotlib Graphs Section -->
+    <!-- Visual Risk Analytics / Graphs Section -->
     <section class="graphs-section">
-      <h2 class="section-heading">📊 Visual Risk Analytics (Generated with Python Matplotlib)</h2>
+      <h2 class="section-heading">Visual Risk Analytics (Generated with Python Matplotlib)</h2>
       
       <div class="graphs-grid">
         <!-- Graph 1: Risk Breakdown Bar Chart -->
         <div class="graph-card">
-          <h3 style="font-size: 1rem; margin-bottom: 12px; color: var(--accent-cyan);">Graph 1: Risk Contribution Breakdown</h3>
+          <div class="graph-card-header">
+            <span>Risk Breakdown</span>
+          </div>
           <img src="{{ url_for('static', filename=charts.breakdown_chart) }}" alt="Risk Breakdown Bar Chart" class="graph-img">
         </div>
 
         <!-- Graph 2: Trust Signals Pie Chart -->
         <div class="graph-card">
-          <h3 style="font-size: 1rem; margin-bottom: 12px; color: var(--accent-cyan);">Graph 2: Trust Signal Distribution</h3>
-          <img src="{{ url_for('static', filename=charts.signals_chart) }}" alt="Trust Signals Pie Chart" class="graph-img">
+          <div class="graph-card-header">
+            <span>Security Indicators</span>
+          </div>
+          <img src="{{ url_for('static', filename=charts.signals_chart) }}" alt="Security Indicators Pie Chart" class="graph-img">
         </div>
 
         <!-- Graph 3: Scan History Line Chart (Full Width) -->
         <div class="graph-card full-width">
-          <h3 style="font-size: 1rem; margin-bottom: 12px; color: var(--accent-cyan);">Graph 3: Historical Scans & Risk Trend</h3>
+          <div class="graph-card-header">
+            <span>Scan History &amp; Risk Trend</span>
+          </div>
           <img src="{{ url_for('static', filename=charts.history_chart) }}" alt="Scan History Line Chart" class="graph-img">
         </div>
       </div>
@@ -140,7 +141,7 @@
 
     <!-- Security Check Cards -->
     <section>
-      <h2 class="section-heading">🛡️ Security Check Cards</h2>
+      <h2 class="section-heading">Security Check Cards</h2>
       <div class="cards-grid">
         
         <!-- Card 1: HTTPS -->
@@ -174,7 +175,7 @@
           </div>
           <p class="check-card-desc">
             {% if not analysis.url_data.is_long_url and not analysis.url_data.has_at_symbol and not analysis.url_data.found_keywords %}
-              The URL has a standard, concise structure with no suspicious indicators.
+              The URL has a standard, concise structure with no suspicious keywords or symbols.
             {% else %}
               Unusual structure: length {{ analysis.url_data.url_length }} chars, 
               {% if analysis.url_data.found_keywords %}keywords detected: {{ analysis.url_data.found_keywords | join(', ') }}{% endif %}
@@ -257,7 +258,7 @@
           </div>
           <p class="check-card-desc">
             {% if analysis.security_headers.hsts and analysis.security_headers.csp %}
-              Strong security headers (HSTS & CSP) are configured.
+              Strong security headers (HSTS &amp; CSP) are configured.
             {% else %}
               Some recommended security headers (such as HSTS or CSP) were not detected.
             {% endif %}
@@ -267,9 +268,33 @@
       </div>
     </section>
 
-    <!-- Technical Details & Trust Pages Table -->
+    <!-- Explainable findings grouped by category -->
+    <section class="explanation-card">
+      <h2 class="card-title">Explainable Findings by Category</h2>
+      <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 14px;">
+        Risk score thresholds: 0–29 Low Risk (Likely Trustworthy), 30–65 Medium Risk (Needs Caution), 66–100 High Risk.
+      </p>
+      {% for category, findings in risk.findings_by_category.items() %}
+        <h3 style="color: var(--navy-dark); font-size: 1rem; margin: 16px 0 8px;">{{ category }}</h3>
+        {% if findings %}
+          {% for finding in findings %}
+            <div class="signal-item {{ finding.severity | lower }}" style="margin-bottom: 6px;">
+              <span class="signal-icon">[{{ finding.severity }}]</span>
+              <div>
+                <strong>{{ finding.message }}</strong><br>
+                <span style="font-size: 0.85rem; opacity: 0.9;">{{ finding.explanation }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">No risk findings recorded in this category.</p>
+        {% endif %}
+      {% endfor %}
+    </section>
+
+    <!-- Technical Details Table -->
     <section class="details-card">
-      <h2 class="card-title">📋 Website Technical Information</h2>
+      <h2 class="card-title">Website Technical Information</h2>
       <table class="details-table">
         <tbody>
           <tr>
@@ -342,39 +367,39 @@
 
     <!-- Trust Pages Check Section -->
     <section class="details-card">
-      <h2 class="card-title">📄 Trust & Legal Page Links</h2>
-      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
-        Legitimate sites typically link to standard policy pages. Missing links are treated as minor signals and do not mean a website is fake.
+      <h2 class="card-title">Trust &amp; Legal Page Links</h2>
+      <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 14px;">
+        Legitimate sites typically publish standard policy pages. Missing links are treated as cautionary heuristics.
       </p>
       <table class="details-table">
         <tbody>
           <tr>
             <th>About Page</th>
-            <td style="color: {{ 'var(--color-trustworthy)' if analysis.trust_pages.about else 'var(--color-caution)' }};">
+            <td style="color: {{ 'var(--color-low-text)' if analysis.trust_pages.about else 'var(--color-med-text)' }}; font-weight: 600;">
               {{ '✓ Found' if analysis.trust_pages.about else '✕ Not Found' }}
             </td>
           </tr>
           <tr>
             <th>Contact Page</th>
-            <td style="color: {{ 'var(--color-trustworthy)' if analysis.trust_pages.contact else 'var(--color-caution)' }};">
+            <td style="color: {{ 'var(--color-low-text)' if analysis.trust_pages.contact else 'var(--color-med-text)' }}; font-weight: 600;">
               {{ '✓ Found' if analysis.trust_pages.contact else '✕ Not Found' }}
             </td>
           </tr>
           <tr>
             <th>Privacy Policy</th>
-            <td style="color: {{ 'var(--color-trustworthy)' if analysis.trust_pages.privacy else 'var(--color-caution)' }};">
+            <td style="color: {{ 'var(--color-low-text)' if analysis.trust_pages.privacy else 'var(--color-med-text)' }}; font-weight: 600;">
               {{ '✓ Found' if analysis.trust_pages.privacy else '✕ Not Found' }}
             </td>
           </tr>
           <tr>
             <th>Terms of Service</th>
-            <td style="color: {{ 'var(--color-trustworthy)' if analysis.trust_pages.terms else 'var(--color-caution)' }};">
+            <td style="color: {{ 'var(--color-low-text)' if analysis.trust_pages.terms else 'var(--color-med-text)' }}; font-weight: 600;">
               {{ '✓ Found' if analysis.trust_pages.terms else '✕ Not Found' }}
             </td>
           </tr>
           <tr>
             <th>Refund / Return Policy</th>
-            <td style="color: {{ 'var(--color-trustworthy)' if analysis.trust_pages.refund else 'var(--color-caution)' }};">
+            <td style="color: {{ 'var(--color-low-text)' if analysis.trust_pages.refund else 'var(--color-med-text)' }}; font-weight: 600;">
               {{ '✓ Found' if analysis.trust_pages.refund else '✕ Not Found' }}
             </td>
           </tr>
@@ -382,22 +407,36 @@
       </table>
     </section>
 
+    <!-- Recommendations & Details -->
+    <section class="explanation-card">
+      <h2 class="card-title">Recommendations &amp; Details</h2>
+      <div style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">
+        {% if risk.score < 30 %}
+          <p><strong>Low Risk Assessment:</strong> The scanned website exhibits standard security practices including active HTTPS encryption, a standard domain structure, and valid security parameters. Continue exercising normal web safety habits.</p>
+        {% elif risk.score <= 65 %}
+          <p><strong>Medium Risk Assessment (Needs Caution):</strong> Some cautionary indicators were observed (e.g. missing security headers, missing policy links, or unusual URL traits). Be cautious before submitting sensitive personal or financial information.</p>
+        {% else %}
+          <p><strong>High Risk Assessment:</strong> Multiple suspicious indicators or security deficiencies were identified. Avoid entering passwords, credit card numbers, or downloading unknown files from this domain.</p>
+        {% endif %}
+      </div>
+    </section>
+
     <!-- Action Buttons -->
     <div class="actions-bar">
       <a href="{{ url_for('download_report', filename=report_filename) }}" class="btn-primary">
-        📥 Download Report (.TXT)
+        Download Report (.TXT)
       </a>
       <a href="{{ url_for('download_report', filename=pdf_filename) }}" class="btn-secondary">
-        📄 Download PDF
+        Download PDF
       </a>
       <a href="{{ url_for('download_report', filename=json_filename) }}" class="btn-secondary">
-        🧾 Download JSON
+        Download JSON
       </a>
       <a href="{{ url_for('home') }}" class="btn-secondary">
-        🔄 Analyze Another Website
+        Analyze Another Website
       </a>
       <a href="{{ url_for('history_page') }}" class="btn-secondary">
-        📜 View All Scan History
+        View All Scan History
       </a>
     </div>
 
@@ -406,7 +445,7 @@
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p>WebTrust – Educational Website Trust & Risk Analyzer | Built with Python, Flask, and Matplotlib</p>
+      <p>WebTrust – Website Trust &amp; Risk Analyzer | Final Year B.E. Computer Science Mini-Project</p>
     </div>
   </footer>
 

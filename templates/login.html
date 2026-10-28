@@ -7,28 +7,63 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <nav class="navbar">
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
     <div class="container nav-container">
-      <a class="brand-logo" href="{{ url_for('home') }}">🛡️ WebTrust <span class="brand-badge">AI SECURITY CONSOLE</span></a>
-      <a class="nav-link" href="{{ url_for('home') }}">Back to home</a>
+      <a href="{{ url_for('home') }}" class="brand-logo">
+        <span class="brand-icon">🛡️</span>
+        <span>WebTrust</span>
+      </a>
+      <nav class="nav-links">
+        <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+        <a href="{{ url_for('how_it_works') }}" class="nav-link">How It Works</a>
+        <a href="{{ url_for('history_page') }}" class="nav-link">History</a>
+      </nav>
     </div>
-  </nav>
-  <main class="container" style="max-width: 520px; padding-top: 80px;">
-    <section class="details-card">
-      <div class="hero-pill">Your private scan workspace</div>
-      <h1 class="hero-title" style="font-size: 3rem;">Sign in to WebTrust</h1>
+  </header>
+
+  <main class="container" style="max-width: 460px; padding-top: 48px; padding-bottom: 48px;">
+    <section class="details-card" style="padding: 28px 32px;">
+      <h1 class="hero-title" style="font-size: 1.6rem; text-align: center; margin-bottom: 6px;">Sign In to WebTrust</h1>
+      <p style="text-align: center; color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 20px;">
+        Access your saved scans and favorite websites.
+      </p>
+
       {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-          <p class="signal-item warning">{{ message }}</p>
-        {% endfor %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert-error" style="margin-bottom: 16px;">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
       {% endwith %}
-      <form method="post">
-        <p><label>Email<br><input name="email" type="email" required></label></p>
-        <p><label>Password<br><input name="password" type="password" required></label></p>
-        <button class="btn-primary" type="submit">Sign In</button>
+
+      <form method="post" action="{{ url_for('login') }}">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input id="email" name="email" type="email" class="form-control" placeholder="name@example.com" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" class="form-control" placeholder="Enter your password" required>
+        </div>
+        <button class="btn-primary" type="submit" style="width: 100%; margin-top: 8px;">Sign In</button>
       </form>
-      <p><a href="{{ url_for('register') }}">Create an account</a></p>
+
+      <div style="margin-top: 20px; text-align: center; font-size: 0.88rem; color: var(--text-secondary); border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+        Don't have an account? <a href="{{ url_for('register') }}" style="font-weight: 600;">Create an Account</a>
+      </div>
     </section>
   </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>WebTrust – Website Trust &amp; Risk Analyzer | Final Year B.E. Computer Science Mini-Project</p>
+    </div>
+  </footer>
+
 </body>
 </html>
